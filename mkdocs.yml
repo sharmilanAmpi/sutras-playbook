@@ -1,0 +1,57 @@
+site_name: Sutras Playbook
+site_description: Architecture and operations case study for Sutras, a production SaaS app.
+site_author: Sharmilan
+repo_url: https://github.com/sharmilanAmpi/sutras-playbook
+repo_name: sharmilanAmpi/sutras-playbook
+
+theme:
+  name: material
+  logo: assets/logo.svg
+  favicon: assets/logo.svg
+  font:
+    text: Montserrat
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: teal
+      accent: amber
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: teal
+      accent: amber
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.top
+    - content.code.copy
+    - search.suggest
+
+extra_css:
+  - stylesheets/extra.css
+
+markdown_extensions:
+  - admonition
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+
+nav:
+  - Home: index.md
+  - Architecture: architecture.md
+  - Deployment: deployment.md
+  - Operations: operations.md
+  - Cost Analysis: cost-analysis.md
+  - Scaling: scaling.md
+  - Decisions: decisions.md
