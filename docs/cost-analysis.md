@@ -8,7 +8,8 @@ What it actually costs to run Sutras, broken down by service — and the hard co
 
 | | Estimated monthly cost | Basis |
 |---|---|---|
-| **GCP production, steady state** | **~$65–70** | List-price estimate, node pool typically at its autoscaled floor (1 node) |
+| **GCP production, currently observed** | **~$118–120** | List-price estimate — the node pool is **actually running 2 nodes right now**, not the 1-node floor it's sized to idle at |
+| GCP production, at the autoscaler's 1-node floor | ~$65–70 | List-price estimate — where `min_node_count = 1` says it should mostly sit; not what's happening in practice at the moment |
 | GCP production, autoscaled to 3 nodes | ~$165 | List-price estimate — the realistic worst case if load pushes the pool to its max |
 | AWS UAT, if left running 24/7 | ~$135 | List-price estimate — this is exactly why it isn't left running (see below) |
 | AWS UAT, actual spend to date | **$2** | Real — a few hours of on-demand `terraform apply` / `terraform destroy` cycles |
@@ -16,9 +17,9 @@ What it actually costs to run Sutras, broken down by service — and the hard co
 | Cloudflare (DNS, Tunnel, Workers Static Assets) | $0 | Free tier covers all of this at current traffic |
 | Terraform Cloud (remote state) | $0 | Free tier |
 | Codecov | $0 | Free tier |
-| **Total, current real-world spend** | **~$70–75/month**, comfortably inside budget | GCP node pool typically sitting at 1 node + Claude + AWS only run occasionally |
+| **Total, current real-world spend** | **~$123–125/month** — over the $100 budget | 2 nodes running (not 1) + Cloud SQL + Claude; AWS only runs occasionally |
 
-The single biggest budget risk isn't any line item above — it's the GKE node pool's autoscaler ceiling. At its current 1-node floor, production sits well under budget; if sustained load ever pushes it to its 3-node max, compute cost alone roughly triples. That tradeoff was made deliberately (see `gke.tf`'s own comment on `min_node_count = 1`, quoted in [Decisions](decisions.md#gke-node-sizing-e2-standard-2-not-e2-medium)) — accepted for now, worth revisiting before it's forced by a bill.
+**This is currently over budget, and the reason why is an open question, not a resolved one.** The node pool is provisioned to autoscale down to a 1-node floor at low load (see `gke.tf`'s `min_node_count = 1`, quoted in [Decisions](decisions.md#gke-node-sizing-e2-standard-2-not-e2-medium)) — but right now it's sitting at 2 nodes, not 1, and hasn't scaled back down. Whether that's the autoscaler correctly responding to real sustained load, a scale-down cooldown/threshold not yet triggered, or something pinning a second node up unnecessarily hasn't been root-caused yet — worth checking directly against `kubectl get nodes` / GKE's own autoscaler event log before assuming either explanation.
 
 ## Compute platform comparison
 
@@ -26,7 +27,7 @@ The question this project keeps coming back to: AWS is provably the expensive op
 
 | Platform | Estimated monthly cost (this workload) | Ops overhead | Why / why not |
 |---|---|---|---|
-| **GKE Standard** (current, production) | ~$65–70 steady state, up to ~$165 at max autoscale | Highest — node pools, Helm, `kubectl`, NetworkPolicy, manual cluster upgrades | Chosen deliberately for the Kubernetes operational experience, not because it's the cheapest fit for this traffic level |
+| **GKE Standard** (current, production) | ~$118–120 currently observed (2 nodes) — sized to idle at ~$65–70 (1 node), up to ~$165 at max autoscale (3 nodes) | Highest — node pools, Helm, `kubectl`, NetworkPolicy, manual cluster upgrades | Chosen deliberately for the Kubernetes operational experience, not because it's the cheapest fit for this traffic level |
 | **Cloud Run** (not used) | ~$10–30 — pay-per-use compute (likely $0–10 at this traffic, on Cloud Run's free tier) + Cloud SQL (~$10) + a managed/hosted Redis substitute (e.g. Upstash, ~$0–10 at this scale) | Lowest — no cluster to manage, scale-to-zero, no node sizing incidents to have | Would very likely be the objectively better fit for this app's actual traffic; not chosen specifically because it wouldn't teach node-pool operations |
 | **AWS ECS Fargate** (UAT only, on demand) | ~$135 if run 24/7 (see breakdown below) | Medium — no EC2 patching, but a full VPC/ALB/NAT stack to maintain | Real, but deliberately not run continuously — see [Decisions](decisions.md#dual-cloud-split-aws-for-uat-gcp-for-production-and-aws-only-runs-on-demand) |
 
@@ -34,9 +35,9 @@ The GKE-vs-Cloud-Run gap (~$40–50/month at the low end) is the single largest 
 
 ## Compute (GCP — GKE)
 
-- **Node pool**: `e2-standard-2` (2 vCPU / 8GB), autoscaled 1–3 nodes. On-demand list price ≈ $0.067/hour/node (`us-central1`) → **≈ $49/month at 1 node**, **≈ $147/month at 3 nodes**.
+- **Node pool**: `e2-standard-2` (2 vCPU / 8GB), autoscaled 1–3 nodes. On-demand list price ≈ $0.067/hour/node (`us-central1`) → **≈ $49/month at 1 node** (the autoscaler's floor), **≈ $98/month at 2 nodes** (what's actually running right now), **≈ $147/month at 3 nodes** (the ceiling).
 - **Cluster management fee**: GKE bills $0.10/hour per cluster, but every billing account gets one zonal cluster's management fee waived — this cluster is zonal, so the fee is expected to be **$0**.
-- **Boot disks**: 20GB PD-SSD per node ≈ $3.40/month/node → **≈ $3–10/month** depending on node count.
+- **Boot disks**: 20GB PD-SSD per node ≈ $3.40/month/node → **≈ $3–10/month** depending on node count (currently 2 nodes ≈ $6.80/month).
 - No pod-level autoscaling exists (no HPA in the Helm chart) — the numbers above are the entire compute-scaling story today; see [Scaling](scaling.md).
 
 ## Database (GCP — Cloud SQL)
