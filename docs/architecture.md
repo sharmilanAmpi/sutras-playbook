@@ -94,10 +94,10 @@ sequenceDiagram
     W->>D: Update entry (status: published)
     deactivate W
 
-    Note over S,U: TODO — how does the client learn the entry<br/>finished? Poll on an interval, SSE/WebSocket,<br/>or a Redis pub/sub push?
+    Note over S,U: Nothing pushes this back to the client today —<br/>see below.
 ```
 
-> **Open question:** the request path (API to Postgres) is synchronous and easy to reason about. The response path back to the user once the worker finishes is not documented anywhere yet — pick a mechanism and record it in [Decisions](decisions.md).
+> **Resolved, and the answer is "nothing yet":** confirmed directly against the frontend source, not just undocumented — there is no polling loop, no `EventSource`/SSE, and no `WebSocket` client anywhere in `frontend/src/`. The only interval timer in the codebase belongs to an unrelated homepage widget. A user currently learns an entry finished only by reloading or revisiting the page. See [Decisions](decisions.md#how-pipeline-completion-reaches-the-client-still-unresolved) for why this was left open rather than guessed at, and [Roadmap](roadmap.md#next) for where it sits in priority.
 
 ## Redis: cache and queue, one instance
 
@@ -107,37 +107,37 @@ The overview above says Redis "does double duty as cache and message transport,"
 flowchart LR
     subgraph RedisBox["Redis — one instance, two contracts"]
         direction TB
-        Cache["Cache\nTODO: what's cached — sessions? read models?\nTTL-based, loss is acceptable"]
-        Queue["Queue transport\npipeline jobs\nTODO: must survive a restart — does it?"]
+        Cache["Cache\nSymfony cache.app + cache.auth_sessions pools\nTTL-based, loss is acceptable"]
+        Queue["Queue transport\nsymfony/redis-messenger (Streams: XADD/XREADGROUP)\nack + retry semantics, per-message"]
     end
     API["Symfony API"] -->|cache read/write| Cache
     API -->|enqueue job| Queue
     Worker["Async worker"] -->|consume + ack| Queue
 ```
 
-> **Open question, unresolved by this doc:** is the queue side backed by something durable (Redis Streams, or a Symfony Messenger transport with persistence) with ack/retry semantics, or is it plain pub/sub — which is fire-and-forget and drops messages if the worker is down when they're published? That answer decides whether Redis is a permanent piece of this architecture or a placeholder to swap for a dedicated broker as volume grows. Record the decision in [Decisions](decisions.md#redis-cache-and-queue-on-one-instance).
+> **Resolved — partially good news:** the queue side is backed by `symfony/redis-messenger`, which uses Redis Streams (`XADD` to publish, `XREADGROUP` with a consumer group to consume) rather than plain pub/sub, so message delivery itself has ack/retry semantics — a worker crash mid-job doesn't lose that job. **But** the production Redis pod runs with no PersistentVolumeClaim at all — it's in-memory only. The cluster's node autoscaler routinely reschedules pods as it scales the node pool between 1 and 3 nodes, and every time the Redis pod restarts, both the cache (expected) and any not-yet-consumed stream entries (not expected — a silent, user-invisible loss) disappear together. The transport mechanism is durable; the instance running it today isn't. See [Decisions](decisions.md#redis-cache-and-queue-on-one-instance-with-no-persistence-in-production).
 
 ## Component view: backend
 
-The hexagonal diagram earlier is the pattern; this is where the pattern should map onto the actual Symfony modules. Placeholder below — fill in real class/namespace names.
+The hexagonal diagram earlier is the pattern; this is how it actually maps onto the Symfony modules under `backend/src/`. One naming note before the diagram: the domain's core entity is called `Axiom` in the code — the product itself renamed "Sutra" to "Axiom" in v0.1.0 (new logo, new visual style at the same time) — while this doc, like the rest of the product surface, still calls it an "entry." If you're reading the actual source alongside this page, `Axiom` is the class you're looking for.
 
 ```mermaid
 flowchart TB
-    subgraph Driving["Driving adapters"]
-        HTTP["HTTP controllers"]
-        CLI["Worker entry point\n(Messenger consumer)"]
+    subgraph Driving["Driving adapters — Infrastructure/Http, Infrastructure/Messenger"]
+        HTTP["HTTP controllers\n(Infrastructure/Http/Controller)"]
+        CLI["Messenger consumer\n(worker: messenger:consume async)"]
     end
     subgraph Application["Application — use cases"]
-        UC["TODO: e.g. CreateEntry, RunPipelineStage,\nReviewFlaggedEntry"]
+        UC["SaveAxiom, ValidateAxiomHandler,\nCorrectAxiomHandler, ContextCorrectAxiomHandler,\nSimplifyAxiomHandler, override-content-rejection"]
     end
     subgraph Domain["Domain"]
-        Dom["TODO: e.g. Entry, PipelineRun,\nValidationPolicy, AuditLog"]
+        Dom["Axiom, AxiomWorkflow, WorkflowTrigger,\nContentValidationProvider (port), CorrectionProvider (port),\nper-stage RequestPublisher ports"]
     end
-    subgraph Driven["Driven adapters"]
-        Repo["TODO: persistence adapter (Doctrine)"]
-        AIPort["AI provider port"]
-        Claude["Claude adapter"]
-        Local["Local model adapter"]
+    subgraph Driven["Driven adapters — Infrastructure/Persistence, Infrastructure/Correction"]
+        Repo["Doctrine repository adapters\n(Infrastructure/Persistence/Doctrine)"]
+        AIPort["AI provider ports\n(ContentValidationProvider, CorrectionProvider)"]
+        Claude["ClaudeContentValidationProvider,\nClaudeCorrectionProvider — live today"]
+        Local["ai-server/ (Qwen2.5-1.5B, FastAPI) —\nbuilt, not wired to a port implementation yet"]
     end
     HTTP --> UC
     CLI --> UC
@@ -145,36 +145,38 @@ flowchart TB
     UC -.-> Repo
     UC -.-> AIPort
     AIPort --> Claude
-    AIPort --> Local
+    AIPort -.->|not implemented| Local
 ```
 
 ## Component view: frontend
 
-Same gap on the SPA side — and the earlier "both apps are built hexagonal" claim is untested here unless the split actually shows up in the frontend too. Placeholder below, drawn the same shape as the backend one on purpose — if the real SPA doesn't map cleanly onto driving/application/domain/driven, that claim needs correcting, not the diagram.
+Same shape on the SPA side (`frontend/src/{domain,application,infrastructure,ui}`), and it does hold up — enforced not just by convention but by `@domain/@application/@infrastructure/@ui` TypeScript path aliases, so an import reaching the wrong direction is visible in a diff, not just in code review discipline.
 
 ```mermaid
 flowchart TB
-    subgraph Driving["Driving side — UI"]
-        Views["TODO: views/components —\nentry list, entry editor, curator review queue"]
+    subgraph Driving["Driving side — ui/"]
+        Views["ui/pages, ui/components —\nentry list/editor/detail, /axiom-workflows\ncurator review queue, Insights dashboard"]
     end
-    subgraph AppCore["Application — hooks / use-cases"]
-        Hooks["TODO: e.g. useCreateEntry, useEntryStatus,\nuseCuratorQueue"]
+    subgraph AppCore["Application — application/"]
+        Hooks["application/command, application/query —\nuse cases consumed by ui/hooks"]
     end
-    subgraph Domain["Domain — client-side rules"]
-        DomFE["TODO: e.g. entry status transitions,\nvalidation-error presentation rules"]
+    subgraph Domain["Domain — domain/"]
+        DomFE["domain/model, domain/service —\nentry status transitions, role-based UI gating rules"]
     end
-    subgraph Driven["Driven side — adapters"]
-        APIClient["API client adapter (REST)"]
-        Notif["Notification adapter —\nTODO: poll timer? SSE/WebSocket client?"]
+    subgraph Driven["Driven side — infrastructure/"]
+        APIClient["infrastructure/http —\nREST client implementing domain/repository ports"]
+        Fake["infrastructure/fake —\nlocal/in-memory repos backing a few Insights\nwidgets by design, pending real endpoints"]
+        Notif["Notification/push adapter —\ndoes not exist yet (see below)"]
     end
     Views --> Hooks
     Hooks --> DomFE
     Hooks -.->|port| APIClient
-    Hooks -.->|port| Notif
-    APIClient -->|REST| Backend["Symfony API"]
+    Hooks -.->|port| Fake
+    Hooks -.->|port, unimplemented| Notif
+    APIClient -->|REST, via Vite dev proxy or VITE_API_BASE_URL| Backend["Symfony API"]
 ```
 
-The `Notif` adapter is the same open question flagged in [How data actually travels](#how-data-actually-travels) — whatever mechanism gets chosen there is what lives behind this port.
+The `Notif` adapter is the concrete shape of the [pipeline-completion open question](#how-data-actually-travels) — there's a port-shaped gap in the diagram because there's a real gap in the code: no adapter has been written for it yet.
 
 ## Why it's built this way
 

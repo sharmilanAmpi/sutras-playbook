@@ -26,6 +26,7 @@ Sutras is a personal knowledge base for micro-learning: a place to record, in a 
 - [Cost Analysis](docs/cost-analysis.md) — what it actually costs to run.
 - [Scaling](docs/scaling.md) — current limits and what changes as load grows.
 - [Decisions](docs/decisions.md) — an ADR-style log of the "why" behind key infra choices.
+- [Roadmap](docs/roadmap.md) — every open gap, prioritized: now, next, later, and deliberately not planned.
 
 Docs are also published as a browsable site via [MkDocs Material](https://squidfunk.github.io/mkdocs-material/). Run `make docs-serve` (Docker, no local Python needed) to view them at `http://localhost:8000` with navigation and search.
 
