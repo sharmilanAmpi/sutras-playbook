@@ -29,3 +29,15 @@ Each entry below should follow:
 - **Context**:
 - **Decision**:
 - **Tradeoff**:
+
+### Redis: cache and queue on one instance
+
+- **Context**: raised in [Architecture](architecture.md#redis-cache-and-queue-one-instance) — one Redis instance serves both a cache (loss-tolerant) and the pipeline job queue (loss-sensitive). Need to record whether the queue side is durable (Streams / a persistent Messenger transport with ack+retry) or plain pub/sub, and what happens to an in-flight job if Redis restarts.
+- **Decision**:
+- **Tradeoff**:
+
+### > TODO: "How pipeline completion reaches the client"
+
+- **Context**: raised in [Architecture](architecture.md#how-data-actually-travels) — an entry is saved synchronously but finishes processing asynchronously. Undocumented: poll on an interval, SSE/WebSocket push, or Redis pub/sub driving a push to the client.
+- **Decision**:
+- **Tradeoff**:
