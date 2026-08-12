@@ -12,21 +12,21 @@ Each entry below should follow:
 
 ## Entries
 
-### > TODO: e.g. "Why GKE, not a serverless container platform"
+### Cluster / compute platform
 
-- **Context**:
+- **Context**: raised in [Deployment](deployment.md#deployment-view) — the deployment view has an unresolved node, `TODO: cluster — managed k8s / self-hosted / other?`. Whatever's chosen also shapes the rollout mechanism in that doc's release-process diagram.
 - **Decision**:
 - **Tradeoff**:
 
-### > TODO: e.g. "Why Redis in-cluster, not a managed cache"
+### Redis: in-cluster vs. managed
 
-- **Context**:
+- **Context**: raised in [Deployment](deployment.md#deployment-view) — Redis's placement (in-cluster pod vs. a managed cache service). Related to but distinct from [cache-and-queue-on-one-instance](#redis-cache-and-queue-on-one-instance) below: a managed service can change the durability answer to that question for free, self-hosted-in-cluster doesn't.
 - **Decision**:
 - **Tradeoff**:
 
-### > TODO: e.g. "Why a tunnel into the cluster, not a public load balancer"
+### Ingress path: tunnel vs. public load balancer
 
-- **Context**:
+- **Context**: raised in [Deployment](deployment.md#deployment-view) — the `Ingress` node is undocumented. Affects DNS/CDN setup and the attack surface of the production environment.
 - **Decision**:
 - **Tradeoff**:
 
@@ -36,8 +36,13 @@ Each entry below should follow:
 - **Decision**:
 - **Tradeoff**:
 
-### > TODO: "How pipeline completion reaches the client"
+### How pipeline completion reaches the client
 
 - **Context**: raised in [Architecture](architecture.md#how-data-actually-travels) — an entry is saved synchronously but finishes processing asynchronously. Undocumented: poll on an interval, SSE/WebSocket push, or Redis pub/sub driving a push to the client.
 - **Decision**:
 - **Tradeoff**:
+
+## References
+
+- [Documenting Architecture Decisions](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions) — Michael Nygard's original write-up; the source of the context/decision/tradeoff format this log follows.
+- [adr.github.io](https://adr.github.io/) — community index of ADR templates and tooling, useful if this ever needs to grow past a single flat file.
