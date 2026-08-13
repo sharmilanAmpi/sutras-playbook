@@ -1,0 +1,1151 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Architecture and operations case study for Sutras, a production SaaS app.">
+      
+      
+        <meta name="author" content="Sharmilan">
+      
+      
+      
+        <link rel="prev" href="../operations/">
+      
+      
+        <link rel="next" href="../scaling/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/logo.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Cost Analysis - Sutras Playbook</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Montserrat";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#cost-analysis" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Sutras Playbook" class="md-header__button md-logo" aria-label="Sutras Playbook" data-md-component="logo">
+      
+  <img src="../assets/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Sutras Playbook
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Cost Analysis
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="amber"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="amber"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/sharmilanAmpi/sutras-playbook" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    sutras-playbook
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../architecture/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../deployment/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Deployment
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../operations/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Operations
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Cost Analysis
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../scaling/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Scaling
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../decisions/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Decisions
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../roadmap/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Roadmap
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Sutras Playbook" class="md-nav__button md-logo" aria-label="Sutras Playbook" data-md-component="logo">
+      
+  <img src="../assets/logo.svg" alt="logo">
+
+    </a>
+    Sutras Playbook
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/sharmilanAmpi/sutras-playbook" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    sutras-playbook
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cost Analysis
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cost Analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#compute-platform-comparison" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compute platform comparison
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#compute-gcp-gke" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compute (GCP — GKE)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#database-gcp-cloud-sql" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Database (GCP — Cloud SQL)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#caching-in-cluster-redis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Caching (in-cluster Redis)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#networking-cdn-cloudflare" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Networking / CDN (Cloudflare)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#third-party-apis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Third-party APIs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aws-uat-if-left-running-247" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AWS UAT, if left running 24/7
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cost-saving-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cost-saving decisions
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../scaling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scaling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Decisions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#compute-platform-comparison" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compute platform comparison
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#compute-gcp-gke" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compute (GCP — GKE)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#database-gcp-cloud-sql" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Database (GCP — Cloud SQL)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#caching-in-cluster-redis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Caching (in-cluster Redis)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#networking-cdn-cloudflare" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Networking / CDN (Cloudflare)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#third-party-apis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Third-party APIs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aws-uat-if-left-running-247" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AWS UAT, if left running 24/7
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cost-saving-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cost-saving decisions
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="cost-analysis">Cost Analysis<a class="headerlink" href="#cost-analysis" title="Permanent link">&para;</a></h1>
+<p>What it actually costs to run Sutras, broken down by service — and the hard constraint everything else on this page is answering to: <strong>a self-imposed $100/month ceiling.</strong> This isn't a target to stay comfortably under; it's the actual budget for a side project, and it shapes real architecture decisions elsewhere in this site (in-cluster Redis instead of Memorystore, a Cloudflare Tunnel instead of a GCP load balancer, a zonal cluster instead of regional, AWS run on demand instead of always-on) — see <a href="#cost-saving-decisions">Cost-saving decisions</a> below.</p>
+<p><strong>A note on precision</strong>: three numbers on this page are real — GCP is currently running on a $300/90-day trial credit (not yet a real monthly bill), AWS spend to date is about $2 total for a handful of on-demand testing sessions, and Claude API usage is budgeted at roughly $5/month at current volume. Everything else is a <strong>list-price estimate</strong>, computed from each provider's published pricing for the exact instance types and configuration actually provisioned (read straight out of the Terraform in this repo, not guessed) — not pulled from an invoice. Treat the totals as "what this should cost," to be corrected against real bills once the GCP trial ends.</p>
+<h2 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Estimated monthly cost</th>
+<th>Basis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>GCP production, currently observed</strong></td>
+<td><strong>~$118–120</strong></td>
+<td>List-price estimate — the node pool is <strong>actually running 2 nodes right now</strong>, not the 1-node floor it's sized to idle at</td>
+</tr>
+<tr>
+<td>GCP production, at the autoscaler's 1-node floor</td>
+<td>~$65–70</td>
+<td>List-price estimate — where <code>min_node_count = 1</code> says it should mostly sit; not what's happening in practice at the moment</td>
+</tr>
+<tr>
+<td>GCP production, autoscaled to 3 nodes</td>
+<td>~$165</td>
+<td>List-price estimate — the realistic worst case if load pushes the pool to its max</td>
+</tr>
+<tr>
+<td>AWS UAT, if left running 24/7</td>
+<td>~$135</td>
+<td>List-price estimate — this is exactly why it isn't left running (see below)</td>
+</tr>
+<tr>
+<td>AWS UAT, actual spend to date</td>
+<td><strong>$2</strong></td>
+<td>Real — a few hours of on-demand <code>terraform apply</code> / <code>terraform destroy</code> cycles</td>
+</tr>
+<tr>
+<td>Claude API</td>
+<td><strong>~$5</strong></td>
+<td>Real, current usage-based estimate at today's volume</td>
+</tr>
+<tr>
+<td>Cloudflare (DNS, Tunnel, Workers Static Assets)</td>
+<td>$0</td>
+<td>Free tier covers all of this at current traffic</td>
+</tr>
+<tr>
+<td>Terraform Cloud (remote state)</td>
+<td>$0</td>
+<td>Free tier</td>
+</tr>
+<tr>
+<td>Codecov</td>
+<td>$0</td>
+<td>Free tier</td>
+</tr>
+<tr>
+<td><strong>Total, current real-world spend</strong></td>
+<td><strong>~$123–125/month</strong> — over the $100 budget</td>
+<td>2 nodes running (not 1) + Cloud SQL + Claude; AWS only runs occasionally</td>
+</tr>
+</tbody>
+</table>
+<p><strong>This is currently over budget, and the reason why is an open question, not a resolved one.</strong> The node pool is provisioned to autoscale down to a 1-node floor at low load (see <code>gke.tf</code>'s <code>min_node_count = 1</code>, quoted in <a href="../decisions/#gke-node-sizing-e2-standard-2-not-e2-medium">Decisions</a>) — but right now it's sitting at 2 nodes, not 1, and hasn't scaled back down. Whether that's the autoscaler correctly responding to real sustained load, a scale-down cooldown/threshold not yet triggered, or something pinning a second node up unnecessarily hasn't been root-caused yet — worth checking directly against <code>kubectl get nodes</code> / GKE's own autoscaler event log before assuming either explanation.</p>
+<h2 id="compute-platform-comparison">Compute platform comparison<a class="headerlink" href="#compute-platform-comparison" title="Permanent link">&para;</a></h2>
+<p>The question this project keeps coming back to: AWS is provably the expensive option here, and Cloud Run would very likely beat GKE on both cost and effort — so why is GKE the one that's actually always-on? See the <a href="../decisions/#cluster-compute-platform-gke-standard-not-autopilot-not-cloud-run">full reasoning in Decisions</a>; the numbers behind it:</p>
+<table>
+<thead>
+<tr>
+<th>Platform</th>
+<th>Estimated monthly cost (this workload)</th>
+<th>Ops overhead</th>
+<th>Why / why not</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>GKE Standard</strong> (current, production)</td>
+<td>~$118–120 currently observed (2 nodes) — sized to idle at ~$65–70 (1 node), up to ~$165 at max autoscale (3 nodes)</td>
+<td>Highest — node pools, Helm, <code>kubectl</code>, NetworkPolicy, manual cluster upgrades</td>
+<td>Chosen deliberately for the Kubernetes operational experience, not because it's the cheapest fit for this traffic level</td>
+</tr>
+<tr>
+<td><strong>Cloud Run</strong> (not used)</td>
+<td>~$10–30 — pay-per-use compute (likely $0–10 at this traffic, on Cloud Run's free tier) + Cloud SQL (~$10) + a managed/hosted Redis substitute (e.g. Upstash, ~$0–10 at this scale)</td>
+<td>Lowest — no cluster to manage, scale-to-zero, no node sizing incidents to have</td>
+<td>Would very likely be the objectively better fit for this app's actual traffic; not chosen specifically because it wouldn't teach node-pool operations</td>
+</tr>
+<tr>
+<td><strong>AWS ECS Fargate</strong> (UAT only, on demand)</td>
+<td>~$135 if run 24/7 (see breakdown below)</td>
+<td>Medium — no EC2 patching, but a full VPC/ALB/NAT stack to maintain</td>
+<td>Real, but deliberately not run continuously — see <a href="../decisions/#dual-cloud-split-aws-for-uat-gcp-for-production-and-aws-only-runs-on-demand">Decisions</a></td>
+</tr>
+</tbody>
+</table>
+<p>The GKE-vs-Cloud-Run gap (~$40–50/month at the low end) is the single largest line item that's a skill-signaling choice rather than an engineering requirement — worth being upfront about rather than presenting GKE as the "correct" answer for a workload this size.</p>
+<h2 id="compute-gcp-gke">Compute (GCP — GKE)<a class="headerlink" href="#compute-gcp-gke" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Node pool</strong>: <code>e2-standard-2</code> (2 vCPU / 8GB), autoscaled 1–3 nodes. On-demand list price ≈ $0.067/hour/node (<code>us-central1</code>) → <strong>≈ $49/month at 1 node</strong> (the autoscaler's floor), <strong>≈ $98/month at 2 nodes</strong> (what's actually running right now), <strong>≈ $147/month at 3 nodes</strong> (the ceiling).</li>
+<li><strong>Cluster management fee</strong>: GKE bills $0.10/hour per cluster, but every billing account gets one zonal cluster's management fee waived — this cluster is zonal, so the fee is expected to be <strong>$0</strong>.</li>
+<li><strong>Boot disks</strong>: 20GB PD-SSD per node ≈ $3.40/month/node → <strong>≈ $3–10/month</strong> depending on node count (currently 2 nodes ≈ $6.80/month).</li>
+<li>No pod-level autoscaling exists (no HPA in the Helm chart) — the numbers above are the entire compute-scaling story today; see <a href="../scaling/">Scaling</a>.</li>
+</ul>
+<h2 id="database-gcp-cloud-sql">Database (GCP — Cloud SQL)<a class="headerlink" href="#database-gcp-cloud-sql" title="Permanent link">&para;</a></h2>
+<p><code>db-f1-micro</code>, zonal (no HA), Postgres, 10GB SSD, daily backups. List-price estimate: <strong>≈ $8–10/month instance</strong> + <strong>≈ $1.70/month storage</strong> ≈ <strong>~$10–12/month total</strong>. No read replica, no HA standby — see <a href="../scaling/">Scaling</a> for what that means under load.</p>
+<h2 id="caching-in-cluster-redis">Caching (in-cluster Redis)<a class="headerlink" href="#caching-in-cluster-redis" title="Permanent link">&para;</a></h2>
+<p>Effectively <strong>$0 incremental cost</strong> — it's a pod on a node already being paid for, not a separate line item. That's the entire reason it's self-hosted rather than on Memorystore: GCP's smallest Memorystore Basic-tier instance would cost roughly as much per month as the node pool itself at its 1-node floor. The cost saved here is real; so is the durability given up for it — see <a href="../decisions/#redis-cache-and-queue-on-one-instance-with-no-persistence-in-production">Decisions</a>.</p>
+<h2 id="networking-cdn-cloudflare">Networking / CDN (Cloudflare)<a class="headerlink" href="#networking-cdn-cloudflare" title="Permanent link">&para;</a></h2>
+<p>DNS, the Cloudflare Tunnel, and Workers Static Assets for the frontend are all on Cloudflare's free tier at this traffic level — <strong>$0/month</strong>. This is also why there's no GCP load balancer or NAT Gateway in production: an external HTTP(S) Load Balancer alone runs close to $20/month before any traffic, and a NAT Gateway is billed hourly plus per-GB regardless of whether it's actually used — both avoided by the Tunnel + Workers approach. See <a href="../decisions/#ingress-path-cloudflare-tunnel-workers-not-a-gcp-load-balancer">Decisions</a>.</p>
+<h2 id="third-party-apis">Third-party APIs<a class="headerlink" href="#third-party-apis" title="Permanent link">&para;</a></h2>
+<p>The Claude API, called from every stage of the <a href="../architecture/#the-ai-pipeline">AI pipeline</a>, is budgeted at <strong>~$5/month</strong> at current entry volume. The self-hosted <code>ai-server/</code> prototype exists specifically as a pre-built escape hatch if this line item ever becomes the constraint instead of infrastructure — see <a href="../decisions/#self-hosted-ai-models-prototyped-not-wired-in">Decisions</a>.</p>
+<h2 id="aws-uat-if-left-running-247">AWS UAT, if left running 24/7<a class="headerlink" href="#aws-uat-if-left-running-247" title="Permanent link">&para;</a></h2>
+<p>Real spend on AWS to date is about <strong>$2 total</strong> — a few hours across several <code>terraform apply</code> / <code>terraform destroy</code> cycles, not a running environment. Here's the list-price estimate for what leaving it running continuously <em>would</em> cost, which is the actual reason it isn't:</p>
+<table>
+<thead>
+<tr>
+<th>Resource</th>
+<th>Estimated monthly cost</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NAT Gateway (hourly + data processing)</td>
+<td>~$36</td>
+</tr>
+<tr>
+<td>Application Load Balancer (hourly + LCU)</td>
+<td>~$20–25</td>
+</tr>
+<tr>
+<td>ECS Fargate — 3 services (<code>backend</code>, <code>nginx</code>, <code>frontend</code>)</td>
+<td>~$30</td>
+</tr>
+<tr>
+<td>RDS <code>db.t4g.micro</code> + 20GB gp3 storage</td>
+<td>~$15</td>
+</tr>
+<tr>
+<td>ElastiCache <code>cache.t4g.micro</code> × 2 nodes</td>
+<td>~$26</td>
+</tr>
+<tr>
+<td><strong>Total, if run 24/7</strong></td>
+<td><strong>~$130–135/month</strong></td>
+</tr>
+</tbody>
+</table>
+<p>That single environment alone would exceed the entire $100/month budget — which is exactly why UAT is provisioned on demand rather than left up. The NAT Gateway and ALB together (~$56–60/month) are pure fixed cost regardless of traffic, which is also most of why production deliberately avoids both (see <a href="#networking-cdn-cloudflare">Networking / CDN</a> above).</p>
+<h2 id="cost-saving-decisions">Cost-saving decisions<a class="headerlink" href="#cost-saving-decisions" title="Permanent link">&para;</a></h2>
+<p>Every one of these was made specifically to stay inside the $100/month ceiling — full context in <a href="../decisions/">Decisions</a>:</p>
+<ul>
+<li><a href="../decisions/#redis-in-cluster-container-not-memorystore">In-cluster Redis instead of Memorystore</a> — saves roughly a node's worth of cost per month, at the price of durability.</li>
+<li><a href="../decisions/#ingress-path-cloudflare-tunnel-workers-not-a-gcp-load-balancer">Cloudflare Tunnel + Workers instead of a GCP load balancer</a> — avoids ~$20+/month in fixed LB cost entirely.</li>
+<li><a href="../decisions/#cluster-compute-platform-gke-standard-not-autopilot-not-cloud-run">Zonal, not regional, GKE cluster</a> — a regional cluster triples control-plane node footprint for HA this project doesn't need yet.</li>
+<li><a href="../decisions/#dual-cloud-split-aws-for-uat-gcp-for-production-and-aws-only-runs-on-demand">AWS/UAT provisioned on demand, not always-on</a> — the single largest saving on this page: avoids ~$130/month for an environment only needed in short bursts.</li>
+<li><a href="../deployment/#production-infrastructure">Public-IP GKE nodes, no NAT Gateway</a> — mirrors the AWS NAT Gateway cost avoidance, on the GCP side.</li>
+<li>Container Insights disabled on the ECS cluster — a small, explicit line-item cut, commented directly in <code>ecs.tf</code>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "content.code.copy", "search.suggest"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

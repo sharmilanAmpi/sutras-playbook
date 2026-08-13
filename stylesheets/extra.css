@@ -1,0 +1,25 @@
+/* Sutras brand palette, pulled from the app's frontend/src/ui/index.css
+   theme tokens — teal/blue-green primary, gold/amber accent. */
+
+:root {
+  --md-primary-fg-color: #0d9488;
+  --md-primary-fg-color--light: #14b8a6;
+  --md-primary-fg-color--dark: #0f766e;
+  --md-primary-bg-color: #f0fdfa;
+  --md-accent-fg-color: #f59e0b;
+  --md-accent-fg-color--transparent: #f59e0b1a;
+}
+
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: #14b8a6;
+  --md-primary-fg-color--light: #5eead4;
+  --md-primary-fg-color--dark: #0d9488;
+  --md-primary-bg-color: #ffffff;
+  --md-primary-bg-color--light: rgba(255, 255, 255, 0.9);
+  --md-hue: 205;
+}
+
+.md-header,
+.md-tabs {
+  background-color: var(--md-primary-fg-color);
+}

@@ -1,0 +1,1165 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Architecture and operations case study for Sutras, a production SaaS app.">
+      
+      
+        <meta name="author" content="Sharmilan">
+      
+      
+      
+        <link rel="prev" href="../scaling/">
+      
+      
+        <link rel="next" href="../roadmap/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/logo.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Decisions - Sutras Playbook</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Montserrat";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#decisions" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Sutras Playbook" class="md-header__button md-logo" aria-label="Sutras Playbook" data-md-component="logo">
+      
+  <img src="../assets/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Sutras Playbook
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Decisions
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="amber"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="amber"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/sharmilanAmpi/sutras-playbook" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    sutras-playbook
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../architecture/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../deployment/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Deployment
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../operations/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Operations
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../cost-analysis/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Cost Analysis
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../scaling/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Scaling
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Decisions
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../roadmap/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Roadmap
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Sutras Playbook" class="md-nav__button md-logo" aria-label="Sutras Playbook" data-md-component="logo">
+      
+  <img src="../assets/logo.svg" alt="logo">
+
+    </a>
+    Sutras Playbook
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/sharmilanAmpi/sutras-playbook" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    sutras-playbook
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cost-analysis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cost Analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../scaling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scaling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Decisions
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Decisions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Format
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#entries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Entries
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Entries">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cluster-compute-platform-gke-standard-not-autopilot-not-cloud-run" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cluster / compute platform: GKE Standard, not Autopilot, not Cloud Run
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gke-node-sizing-e2-standard-2-not-e2-medium" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GKE node sizing: e2-standard-2, not e2-medium
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#redis-in-cluster-container-not-memorystore" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Redis: in-cluster container, not Memorystore
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#redis-cache-and-queue-on-one-instance-with-no-persistence-in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Redis: cache and queue on one instance, with no persistence in production
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ingress-path-cloudflare-tunnel-workers-not-a-gcp-load-balancer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ingress path: Cloudflare Tunnel + Workers, not a GCP load balancer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-pipeline-completion-reaches-the-client-still-unresolved" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How pipeline completion reaches the client: still unresolved
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#self-hosted-ai-models-prototyped-not-wired-in" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Self-hosted AI models: prototyped, not wired in
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dual-cloud-split-aws-for-uat-gcp-for-production-and-aws-only-runs-on-demand" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dual-cloud split: AWS for UAT, GCP for production — and AWS only runs on demand
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aws-security-posture-phase-1-now-phase-2-deliberately-deferred" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AWS security posture: "Phase 1" now, "Phase 2" deliberately deferred
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#single-replica-zero-surge-rolling-updates-brief-downtime-is-accepted" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Single replica, zero-surge rolling updates: brief downtime is accepted
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Format
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#entries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Entries
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Entries">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cluster-compute-platform-gke-standard-not-autopilot-not-cloud-run" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cluster / compute platform: GKE Standard, not Autopilot, not Cloud Run
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gke-node-sizing-e2-standard-2-not-e2-medium" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GKE node sizing: e2-standard-2, not e2-medium
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#redis-in-cluster-container-not-memorystore" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Redis: in-cluster container, not Memorystore
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#redis-cache-and-queue-on-one-instance-with-no-persistence-in-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Redis: cache and queue on one instance, with no persistence in production
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ingress-path-cloudflare-tunnel-workers-not-a-gcp-load-balancer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ingress path: Cloudflare Tunnel + Workers, not a GCP load balancer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-pipeline-completion-reaches-the-client-still-unresolved" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How pipeline completion reaches the client: still unresolved
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#self-hosted-ai-models-prototyped-not-wired-in" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Self-hosted AI models: prototyped, not wired in
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dual-cloud-split-aws-for-uat-gcp-for-production-and-aws-only-runs-on-demand" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dual-cloud split: AWS for UAT, GCP for production — and AWS only runs on demand
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aws-security-posture-phase-1-now-phase-2-deliberately-deferred" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AWS security posture: "Phase 1" now, "Phase 2" deliberately deferred
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#single-replica-zero-surge-rolling-updates-brief-downtime-is-accepted" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Single replica, zero-surge rolling updates: brief downtime is accepted
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="decisions">Decisions<a class="headerlink" href="#decisions" title="Permanent link">&para;</a></h1>
+<p>An ADR-style log of the "why" behind key infrastructure choices — context, decision, and tradeoff for each. Most of these were made and documented in the private application repo's own Terraform/Helm comments and READMEs, written at the time (often mid-incident); this page distills them for anyone without access to that repo. Where something is still genuinely unresolved, it's marked open rather than papered over — see <a href="../roadmap/">Roadmap</a> for what happens to those next.</p>
+<h2 id="format">Format<a class="headerlink" href="#format" title="Permanent link">&para;</a></h2>
+<p>Each entry below follows:</p>
+<ul>
+<li><strong>Context</strong> — what problem or constraint prompted the decision.</li>
+<li><strong>Decision</strong> — what was chosen.</li>
+<li><strong>Tradeoff</strong> — what was given up, and why it was an acceptable cost.</li>
+</ul>
+<h2 id="entries">Entries<a class="headerlink" href="#entries" title="Permanent link">&para;</a></h2>
+<h3 id="cluster-compute-platform-gke-standard-not-autopilot-not-cloud-run">Cluster / compute platform: GKE Standard, not Autopilot, not Cloud Run<a class="headerlink" href="#cluster-compute-platform-gke-standard-not-autopilot-not-cloud-run" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Context</strong>: production needs somewhere to run five long-lived processes (API, nginx, worker, cache, tunnel client). Serverless (Cloud Run), a managed autopilot cluster (GKE Autopilot), and a manually-run cluster (GKE Standard) were all realistic options for a workload this small.</li>
+<li><strong>Decision</strong>: GKE <strong>Standard</strong>, zonal, one manually-sized, autoscaled node pool. Deliberately not Autopilot — the stated reason (in <code>infrastructure/gcp/README.md</code>) is that node-pool management is itself something to learn here, not just app deployment.</li>
+<li><strong>Tradeoff</strong>: this is the most expensive and highest-ops-burden of the three realistic options. Cloud Run would very likely be cheaper and near-zero-ops for this traffic level — see the <a href="../cost-analysis/#compute-platform-comparison">comparison table in Cost Analysis</a>. The extra ~$40–50/month and the operational surface (node pools, Helm, <code>kubectl</code>, NetworkPolicy, cluster upgrades) is accepted on purpose, in exchange for hands-on Kubernetes operational experience that Cloud Run wouldn't provide. This is a portfolio/skill-building tradeoff, not a technical requirement of the app itself — worth saying plainly rather than presenting GKE as the "obviously correct" choice.</li>
+</ul>
+<h3 id="gke-node-sizing-e2-standard-2-not-e2-medium">GKE node sizing: e2-standard-2, not e2-medium<a class="headerlink" href="#gke-node-sizing-e2-standard-2-not-e2-medium" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Context</strong>: the node pool went through three sizes in quick succession — e2-small → e2-medium → e2-standard-2 — after two real "Insufficient cpu" incidents where the worker, then the backend, sat <code>Pending</code> for 100+ minutes each because the pool couldn't schedule them.</li>
+<li><strong>Decision</strong>: <code>e2-standard-2</code> (non-shared-core). The root cause turned out to be that <code>e2-small</code>/<code>e2-medium</code> are both <em>shared-core</em> machine types, and GKE reserves a flat ~1060m CPU per node for system DaemonSets (calico, kube-dns, fluentbit, the Workload Identity metadata server) regardless of the node's nominal vCPU count — confirmed live at exactly 940m allocatable out of a nominal 2000m on <code>e2-medium</code>. Moving to memory (2GB → 4GB) with the e2-medium step never touched that ceiling; only moving off shared-core did.</li>
+<li><strong>Tradeoff</strong>: <code>e2-standard-2</code> costs more per node than <code>e2-medium</code>. But <code>e2-medium</code> was a more expensive way to still be broken, not a cheaper working option — the real fix was changing machine family, not size. Applying this kind of node-pool field change also has its own hazard: two of the underlying Terraform provider fields here (<code>workload_metadata_config</code>, and machine-type changes in general) are known to force-replace or silently no-op the whole pool instead of doing GKE's own in-place rolling update — the working pattern documented in <code>gke.tf</code> is to make the change via <code>gcloud</code> first, then confirm <code>terraform plan</code> shows no diff before ever applying.</li>
+</ul>
+<h3 id="redis-in-cluster-container-not-memorystore">Redis: in-cluster container, not Memorystore<a class="headerlink" href="#redis-in-cluster-container-not-memorystore" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Context</strong>: Redis is needed for two things — the Symfony cache pool and the Messenger transport — and GCP's managed option (Memorystore) exists as an alternative to running it as just another pod.</li>
+<li><strong>Decision</strong>: a plain, single-replica Redis container inside the cluster, not Memorystore.</li>
+<li><strong>Tradeoff</strong>: Memorystore's smallest Basic-tier instance costs roughly as much per month as the entire node pool at its 1-node steady state — disproportionate for something serving as a cache plus a queue transport at this traffic level. The cost saved comes directly at the expense of durability: no managed failover, and — see the next entry — no persistence at all today.</li>
+</ul>
+<h3 id="redis-cache-and-queue-on-one-instance-with-no-persistence-in-production">Redis: cache and queue on one instance, with no persistence in production<a class="headerlink" href="#redis-cache-and-queue-on-one-instance-with-no-persistence-in-production" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Context</strong>: one Redis instance serves both a loss-tolerant cache (<code>cache.app</code>, <code>cache.auth_sessions</code>) and the Messenger <code>async</code> transport carrying every AI-pipeline job. <code>symfony/redis-messenger</code> is Streams-based (<code>XADD</code>/<code>XREADGROUP</code> with consumer groups), not plain pub/sub, so message delivery itself has ack/retry semantics rather than being fire-and-forget — that much is a genuine strength of the current setup, not an open question.</li>
+<li><strong>Decision</strong>: run it anyway, as a single pod, with <strong>no PersistentVolumeClaim</strong> (<code>infrastructure/gcp/helm/sutras/templates/redis-deployment.yaml</code> mounts nothing — it's in-memory only, unlike the equivalent Docker Compose service, which does persist to a volume).</li>
+<li><strong>Tradeoff</strong>: this is the one infrastructure gap in this whole system worth calling out clearly. Redis Streams' ack/retry semantics only protect against <em>consumer</em> failure, not against <em>Redis itself</em> losing its data — and the pod restarts routinely, because the cluster autoscaler scales the node pool between 1 and 3 nodes as load changes, which can reschedule the Redis pod. When that happens, both the cache (expected, fine) and any queued-but-not-yet-consumed pipeline job (not fine — silently lost, no user-visible error, no retry) disappear together. This is accepted today because traffic is low enough that the exposure window is small, not because it's actually resolved — see <a href="../roadmap/#now">Roadmap</a>.</li>
+</ul>
+<h3 id="ingress-path-cloudflare-tunnel-workers-not-a-gcp-load-balancer">Ingress path: Cloudflare Tunnel + Workers, not a GCP load balancer<a class="headerlink" href="#ingress-path-cloudflare-tunnel-workers-not-a-gcp-load-balancer" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Context</strong>: the API and frontend both need a public HTTPS endpoint. A GKE Ingress backed by a GCP external HTTP(S) Load Balancer is the "default" answer; Cloudflare was already in use for DNS.</li>
+<li><strong>Decision</strong>: the API is reached via a <strong>Cloudflare Tunnel</strong> — an outbound-only <code>cloudflared</code> pod, no GKE Ingress, no static IP, no GCP forwarding rule. The frontend isn't deployed to GKE at all; the built static bundle ships straight to <strong>Cloudflare Workers Static Assets</strong> (not Cloudflare Pages), via Terraform applying the built <code>frontend/dist/</code> directory directly.</li>
+<li><strong>Tradeoff</strong>: a GCP external HTTP(S) Load Balancer alone runs close to $20/month before any traffic; this setup avoids that entirely, and TLS termination at Cloudflare's edge is effectively free. In exchange, production availability now has a hard dependency on Cloudflare's edge and on the single <code>cloudflared</code> pod staying healthy — there's no non-Cloudflare fallback path to the API at all. It's a single point of failure introduced deliberately for its cost profile.</li>
+</ul>
+<h3 id="how-pipeline-completion-reaches-the-client-still-unresolved">How pipeline completion reaches the client: still unresolved<a class="headerlink" href="#how-pipeline-completion-reaches-the-client-still-unresolved" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Context</strong>: an entry (<code>Axiom</code> in the codebase) is saved synchronously but finishes its four-stage AI pipeline asynchronously, often seconds later.</li>
+<li><strong>Decision</strong>: none yet, and this isn't a documentation gap — it's confirmed absent in the frontend source. There is no polling loop, <code>EventSource</code>/SSE, or <code>WebSocket</code> client anywhere in <code>frontend/src/</code>; the only <code>setInterval</code> in the codebase belongs to an unrelated rotating-quote widget. A user finds out an entry finished only by reloading or revisiting the page (or noticing the in-app notification on their next page load).</li>
+<li><strong>Tradeoff</strong>: not choosing yet is itself a choice — it keeps the frontend simpler and avoids picking a push mechanism before there's real evidence of how much it matters to users. The cost is a genuinely worse experience today: "processing" can sit stale on screen indefinitely with no signal that it's done. See <a href="../roadmap/#next">Roadmap</a> — this is a "next," not a "now," specifically because it's a UX gap rather than a reliability or cost risk.</li>
+</ul>
+<h3 id="self-hosted-ai-models-prototyped-not-wired-in">Self-hosted AI models: prototyped, not wired in<a class="headerlink" href="#self-hosted-ai-models-prototyped-not-wired-in" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Context</strong>: every pipeline stage calls the Claude API today, at low but non-zero cost (~$5/month at current volume). A self-hosted alternative was worth exploring before that cost becomes a real constraint.</li>
+<li><strong>Decision</strong>: three standalone FastAPI + llama-cpp-python services exist (<code>ai-server/</code>), each running a small open-weight model (<code>Qwen2.5-1.5B-Instruct</code>, quantized GGUF, CPU-only) with a system prompt mirroring the Claude provider's prompts — but nothing in the backend calls them. The AI pipeline's <code>CorrectionProvider</code>/<code>ContentValidationProvider</code> ports (see <a href="../architecture/#the-ai-pipeline">Architecture</a>) already make this a swap-in, not a rewrite, whenever it's needed.</li>
+<li><strong>Tradeoff</strong>: building it now, ahead of need, cost real time that could've gone into product features — but the alternative (hitting an unacceptable Claude bill with no fallback already built) is worse. This is deliberately "ahead of the product surface," the same pattern called out in <a href="../architecture/#whats-next">Architecture</a>.</li>
+</ul>
+<h3 id="dual-cloud-split-aws-for-uat-gcp-for-production-and-aws-only-runs-on-demand">Dual-cloud split: AWS for UAT, GCP for production — and AWS only runs on demand<a class="headerlink" href="#dual-cloud-split-aws-for-uat-gcp-for-production-and-aws-only-runs-on-demand" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Context</strong>: wanted both a real pre-production gate before a release reaches users, and hands-on breadth across two major clouds — without paying for two always-on environments on a $100/month budget.</li>
+<li><strong>Decision</strong>: AWS (<code>infrastructure/aws/</code>) hosts UAT — VPC, ECS Fargate, RDS, ElastiCache, ALB, all Terraform-provisioned — but it is applied and destroyed by hand, one <code>terraform apply</code>/<code>terraform destroy</code> at a time, for a testing session, not left running. GCP hosts the always-on production environment and is the only piece deployed automatically (see <a href="../deployment/#release-process">Deployment</a>).</li>
+<li><strong>Tradeoff</strong>: UAT can't be shared as a live link on demand — someone wanting to see it needs it stood up first — and its release path is entirely manual, with no CI workflow wired to it. That's accepted because UAT's job here is a pre-release check, not a demo environment, and running it continuously would be the single most expensive piece of this whole system: see the <a href="../cost-analysis/#aws-uat-if-left-running-247">AWS estimate in Cost Analysis</a>, which is why real spend on it to date is a few dollars, not a monthly bill.</li>
+</ul>
+<h3 id="aws-security-posture-phase-1-now-phase-2-deliberately-deferred">AWS security posture: "Phase 1" now, "Phase 2" deliberately deferred<a class="headerlink" href="#aws-security-posture-phase-1-now-phase-2-deliberately-deferred" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Context</strong>: <code>infrastructure/aws/README.md</code> documents this split explicitly — Phase 1 ("standard hardening": private subnets, least-privilege security groups, encryption at rest, secrets in SSM, HTTPS-only ALB, VPC Flow Logs) is built; Phase 2 (AWS WAF, restricting the ALB to known IP ranges instead of <code>0.0.0.0/0</code>, GuardDuty) is written down but not started.</li>
+<li><strong>Decision</strong>: ship Phase 1 only, and write Phase 2 down in the repo specifically so it isn't forgotten — not because it's scheduled.</li>
+<li><strong>Tradeoff</strong>: UAT is currently reachable from the entire internet with no WAF in front of it. Acceptable for a non-public, testing-only environment that's usually not even running (see the entry above) — would not be acceptable if UAT traffic or visibility grew.</li>
+</ul>
+<h3 id="single-replica-zero-surge-rolling-updates-brief-downtime-is-accepted">Single replica, zero-surge rolling updates: brief downtime is accepted<a class="headerlink" href="#single-replica-zero-surge-rolling-updates-brief-downtime-is-accepted" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Context</strong>: <code>backend</code>, <code>nginx</code>, and <code>worker</code> each run <code>replicaCount: 1</code> with <code>maxSurge: 0, maxUnavailable: 1</code> in the Helm chart.</li>
+<li><strong>Decision</strong>: accept that every deploy briefly runs zero pods of each Deployment while the old pod terminates and the new one starts and passes its readiness probe.</li>
+<li><strong>Tradeoff</strong>: this is the cheapest possible topology — paying for exactly one pod of each component — and it sidesteps a subtler correctness problem: running two <code>worker</code> replicas without any de-duplication or locking on the pipeline could double-process the same entry. The cost is real, if brief (roughly the readiness-probe delay plus image pull time), user-visible downtime on every release. Acceptable today with no uptime SLA and low traffic; the fix (<code>replicaCount: 2</code> + a PodDisruptionBudget, once the double-processing risk is separately handled) is a <a href="../roadmap/#next">Roadmap</a> item, not urgent.</li>
+</ul>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions">Documenting Architecture Decisions</a> — Michael Nygard's original write-up; the source of the context/decision/tradeoff format this log follows.</li>
+<li><a href="https://adr.github.io/">adr.github.io</a> — community index of ADR templates and tooling, useful if this ever needs to grow past a single flat file.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "content.code.copy", "search.suggest"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

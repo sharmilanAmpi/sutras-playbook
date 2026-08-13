@@ -1,0 +1,1018 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Architecture and operations case study for Sutras, a production SaaS app.">
+      
+      
+        <meta name="author" content="Sharmilan">
+      
+      
+      
+        <link rel="prev" href="../architecture/">
+      
+      
+        <link rel="next" href="../operations/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/logo.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Deployment - Sutras Playbook</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Montserrat";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#deployment" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Sutras Playbook" class="md-header__button md-logo" aria-label="Sutras Playbook" data-md-component="logo">
+      
+  <img src="../assets/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Sutras Playbook
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Deployment
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="amber"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="amber"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/sharmilanAmpi/sutras-playbook" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    sutras-playbook
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../architecture/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Deployment
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../operations/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Operations
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../cost-analysis/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Cost Analysis
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../scaling/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Scaling
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../decisions/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Decisions
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../roadmap/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Roadmap
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Sutras Playbook" class="md-nav__button md-logo" aria-label="Sutras Playbook" data-md-component="logo">
+      
+  <img src="../assets/logo.svg" alt="logo">
+
+    </a>
+    Sutras Playbook
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/sharmilanAmpi/sutras-playbook" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    sutras-playbook
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#deployment-view" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deployment view
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#environments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environments
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#production-infrastructure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Production infrastructure
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#release-process" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Release process
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#secrets-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Secrets &amp; configuration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cost-analysis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cost Analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../scaling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scaling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Decisions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#deployment-view" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deployment view
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#environments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environments
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#production-infrastructure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Production infrastructure
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#release-process" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Release process
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#secrets-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Secrets &amp; configuration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="deployment">Deployment<a class="headerlink" href="#deployment" title="Permanent link">&para;</a></h1>
+<p>Where Sutras runs, and how a change gets from a merged PR to production. This is the deployment-diagram counterpart to the container view in <a href="../architecture/">Architecture</a> — same containers, now placed onto real infrastructure.</p>
+<h2 id="deployment-view">Deployment view<a class="headerlink" href="#deployment-view" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>flowchart TB
+    Internet(("Internet")) --&gt; CF["Cloudflare\nDNS + edge TLS"]
+    CF --&gt;|"api.sutras.dev\nTunnel, outbound-only"| CFD["cloudflared pod"]
+    CF --&gt;|"app.sutras.dev\nWorkers Static Assets"| Worker["Cloudflare Worker\n(frontend/dist, no server)"]
+
+    subgraph GKE["GKE Standard — sutras-gke (zonal, autoscaled 1-3 nodes)"]
+        direction TB
+        CFD --&gt; Nginx["nginx pod"]
+        Nginx --&gt; API["backend pod\n(php-fpm)"]
+        API --&gt; RedisPod["redis pod\n(cache + Messenger transport,\nno persistence — see Decisions)"]
+        WorkerPod["worker pod\n(messenger:consume async)"] --&gt; RedisPod
+        WorkerPod --&gt; API2[("Cloud SQL Auth Proxy\nsidecar, per pod")]
+        API --&gt; API2
+    end
+
+    API2 --&gt;|"Workload Identity,\nno static keys"| CloudSQL[("Cloud SQL — Postgres 18\ndb-f1-micro, zonal, no HA")]
+    WorkerPod --&gt; Claude[("Claude API")]
+
+    Worker -.-&gt;|static assets only,\nno backend calls| CF</code></pre>
+<p>No GKE Ingress and no GCP load balancer exist in this picture at all — that absence is deliberate, not missing. See <a href="../decisions/#ingress-path-cloudflare-tunnel-workers-not-a-gcp-load-balancer">Decisions</a>.</p>
+<h2 id="environments">Environments<a class="headerlink" href="#environments" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Environment</th>
+<th>Purpose</th>
+<th>Hosting</th>
+<th>Notable differences</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Local</td>
+<td>Day-to-day development</td>
+<td>Docker Compose, 8 services on one bridge network</td>
+<td>Bind-mounted source, hot reload; <code>APP_ENV=prod</code> can be set on the same containers for a partial prod-like approximation, but it doesn't build the production Dockerfiles or drop the bind mounts</td>
+</tr>
+<tr>
+<td>UAT</td>
+<td>Pre-release validation, and a place to build real AWS experience</td>
+<td>AWS: ECS Fargate + RDS + ElastiCache, behind an ALB, Cloudflare DNS in front</td>
+<td>Only exists when someone runs <code>terraform apply</code> for it — not always-on (see <a href="../decisions/#dual-cloud-split-aws-for-uat-gcp-for-production-and-aws-only-runs-on-demand">Decisions</a>); deployed and torn down manually, no CI trigger</td>
+</tr>
+<tr>
+<td>Production</td>
+<td>Live app</td>
+<td>GCP: GKE Standard + Cloud SQL, Redis in-cluster, Cloudflare Tunnel + Workers</td>
+<td>The only environment deployed automatically, on a GitHub Release tag</td>
+</tr>
+</tbody>
+</table>
+<h2 id="production-infrastructure">Production infrastructure<a class="headerlink" href="#production-infrastructure" title="Permanent link">&para;</a></h2>
+<p><strong>Compute</strong> — a single zonal GKE Standard cluster (<code>sutras-gke</code>, one region-locked zone, not a regional cluster — see <a href="../cost-analysis/">Cost Analysis</a> for why), with one node pool autoscaled between 1 and 3 <code>e2-standard-2</code> nodes (2 vCPU / 8GB each). <code>auto_repair</code> is on; <code>auto_upgrade</code> is deliberately off, so node-pool version bumps are a conscious, manual action rather than something GKE does silently. Workload Identity lets pods authenticate to GCP APIs (specifically the Cloud SQL Admin API) without any static service-account key ever existing on disk. Every workload — <code>backend</code>, <code>nginx</code>, <code>worker</code>, <code>redis</code>, <code>cloudflared</code> — is a <code>replicaCount: 1</code> Deployment defined in one Helm chart (<code>infrastructure/gcp/helm/sutras/</code>); there is no HorizontalPodAutoscaler anywhere in the chart, so scaling under load today only happens at the node level, never at the pod level.</p>
+<p><strong>Database</strong> — Cloud SQL for Postgres (currently Postgres 18), tier <code>db-f1-micro</code>, <strong>zonal availability (no HA)</strong>, 10GB SSD, automated daily backups enabled at 03:00. Reached exclusively through a Cloud SQL Auth Proxy sidecar container in each pod that needs it (<code>backend</code>, <code>worker</code>, the migration Job) — never by IP allowlisting. That's not a stylistic choice: an earlier setup using authorized-networks IP allowlisting caused a real outage when a node replacement got a new external IP that hadn't been allowlisted yet; the Auth Proxy + Workload Identity approach removes that failure mode entirely.</p>
+<p><strong>Caching &amp; queue</strong> — Redis runs as a single, unpersisted in-cluster pod, serving both the Symfony cache and the async Messenger transport. See <a href="../architecture/#redis-cache-and-queue-one-instance">Architecture</a> for the mechanism and <a href="../decisions/#redis-cache-and-queue-on-one-instance-with-no-persistence-in-production">Decisions</a> for the real gap this leaves open.</p>
+<p><strong>Networking / ingress</strong> — no GKE Ingress, no GCP load balancer, no static IP. The API is exposed through an outbound-only Cloudflare Tunnel (<code>cloudflared</code> pod); a <code>NetworkPolicy</code> default-denies all ingress except the specific pod-to-pod paths the app actually needs (<code>cloudflared</code>→<code>nginx</code>, <code>nginx</code>→<code>backend</code>, <code>backend</code>/<code>worker</code>→<code>redis</code>). Egress is left open on purpose — the nodes have public IPs and no NAT Gateway, which is itself a cost-driven choice mirrored on the AWS side.</p>
+<p><strong>Frontend hosting</strong> — not part of the cluster at all. The built static bundle (<code>frontend/dist/</code>) deploys straight to a Cloudflare Worker (Workers Static Assets, not Cloudflare Pages) bound to <code>app.sutras.dev</code>; Cloudflare issues the DNS record and TLS cert for that binding automatically.</p>
+<p><strong>AWS/UAT, when it's running</strong> — a VPC across 2 AZs (public + private subnets), a NAT Gateway for private-subnet egress, ECS Fargate running three services (<code>backend</code>, <code>nginx</code>, <code>frontend</code>) behind an HTTPS-only ALB (TLS 1.3 policy, HTTP→HTTPS redirect), RDS (<code>db.t4g.micro</code>, encrypted at rest) and ElastiCache (<code>cache.t4g.micro</code>, 2-node replication group, encrypted at rest) both in private subnets. Container Insights is explicitly disabled — a one-line cost decision documented right next to the Terraform resource that would enable it.</p>
+<h2 id="release-process">Release process<a class="headerlink" href="#release-process" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>flowchart LR
+    Tag["GitHub Release published\n(vX.Y.Z tag)"] --&gt; CI["Reuse backend-ci.yml /\nfrontend-ci.yml (PHPStan/PHPUnit,\nlint/type-check/test) via workflow_call"]
+    CI --&gt; Auth["Auth to GCP via\nWorkload Identity Federation\n(no static key in CI)"]
+    Auth --&gt; Image["Build + push backend &amp; nginx\nimages to Artifact Registry"]
+    Image --&gt; Migrate["helm upgrade triggers a\npre-upgrade Job: doctrine:migrations:migrate"]
+    Migrate --&gt; Deploy["helm upgrade --install +\nkubectl rollout restart backend/nginx/worker"]
+    Deploy --&gt; Wait["kubectl rollout status\n(waits for readiness, per Deployment)"]
+    Wait --&gt;|"times out / fails"| Manual["No automatic rollback —\nmanual: helm rollback sutras &lt;rev&gt; -n sutras"]
+    Wait --&gt;|passes| Live["Live in production"]</code></pre>
+<p>Releases are cut <strong>per app</strong>, with a prefixed git tag (<code>backend-vX.Y.Z</code> or <code>frontend-vX.Y.Z</code>) that publishing a GitHub Release turns into a <code>release: types: [published]</code> event, triggering <code>.github/workflows/backend-release.yml</code> or <code>frontend-release.yml</code>. Both workflows are thin wrappers around <code>make</code> targets (<code>make/release-gcp.mk</code>) — runnable locally with the same commands CI uses, useful for debugging a failed release without waiting on GitHub Actions:</p>
+<div class="highlight"><pre><span></span><code>make<span class="w"> </span>tf-gcp-init
+make<span class="w"> </span>release-gcp<span class="w"> </span><span class="nv">TAG</span><span class="o">=</span>&lt;git-sha-or-version&gt;<span class="w">   </span><span class="c1"># backend: build, push, migrate, deploy</span>
+make<span class="w"> </span>release-frontend<span class="w">                        </span><span class="c1"># frontend: build, deploy to Cloudflare</span>
+</code></pre></div>
+<p>The <code>helm upgrade</code> timeout is set to 600s specifically to cover the node-pool autoscaler provisioning a fresh node (2–5 minutes) if a deploy needs more capacity than currently exists, on top of the migration Job actually running — Helm's 5-minute default was cutting that too close in practice.</p>
+<p><strong>There is no automated health gate or rollback.</strong> <code>kubectl rollout status</code> will fail the CI job if the new pods never become ready, but nothing automatically reverts to the previous image on that failure — see <a href="../operations/#rolling-back">Operations</a> for the manual <code>helm rollback</code> path, and a production Playwright smoke suite (<code>e2e/</code>, <code>npm run test:production</code>) exists but is triggered by hand, not wired into the release pipeline yet.</p>
+<p>AWS/UAT has no equivalent automated release workflow at all — deploying there is the manual Terraform + <code>make release-aws</code> flow, run locally.</p>
+<blockquote>
+<p>This repo's own CI (<code>.github/workflows/deploy-docs.yml</code>) only deploys this documentation site via <code>mkdocs gh-deploy</code> — a separate, unrelated pipeline from everything above.</p>
+</blockquote>
+<h2 id="secrets-configuration">Secrets &amp; configuration<a class="headerlink" href="#secrets-configuration" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>AWS/UAT</strong> — <code>DATABASE_URL</code>, <code>REDIS_URL</code>, and <code>APP_SECRET</code> live in SSM Parameter Store; nothing is ever written into a task-definition literal or committed to the repo.</li>
+<li><strong>GCP/production</strong> — application secrets are delivered to pods as Kubernetes Secrets (<code>sutras-secrets</code>, <code>cloudflare-tunnel-credentials</code>), referenced via <code>envFrom.secretRef</code> in the Helm templates rather than baked into <code>values.yaml</code>. Database credentials specifically don't need a secret at all in the traditional sense — the Cloud SQL Auth Proxy sidecar authenticates over Workload Identity, so no DB password ever needs to reach the pod as an env var. The Kubernetes Secret objects themselves are created by hand (<code>kubectl create secret ...</code>), not generated by Terraform or Helm — there's no sealed-secrets/External Secrets Operator/Vault layer yet, which is worth knowing if you're the one rotating them.</li>
+<li><strong>Local dev</strong> — Symfony's standard <code>.env</code> &lt; <code>.env.dev</code> &lt; <code>.env.local</code> layering; only <code>.env.local</code>/<code>.env.*.local</code> are gitignored, everything else is committed defaults pointed at the Compose service names.</li>
+</ul>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://c4model.com/diagrams/deployment">C4 model — Deployment diagrams</a> — the diagram style used above: containers (from <a href="../architecture/">Architecture</a>) mapped onto infrastructure nodes. This is the one place C4 genuinely extends past the four core levels into infra.</li>
+<li><a href="https://12factor.net/">The Twelve-Factor App</a> — the standard the Environments and Secrets sections should conform to once filled in (config via environment, strict dev/staging/prod parity).</li>
+<li><a href="../decisions/">Decisions</a> — the "why" behind every TODO box in the deployment view above.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "content.code.copy", "search.suggest"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,1167 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Architecture and operations case study for Sutras, a production SaaS app.">
+      
+      
+        <meta name="author" content="Sharmilan">
+      
+      
+      
+        <link rel="prev" href="..">
+      
+      
+        <link rel="next" href="../deployment/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/logo.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Architecture - Sutras Playbook</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Montserrat";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#architecture" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Sutras Playbook" class="md-header__button md-logo" aria-label="Sutras Playbook" data-md-component="logo">
+      
+  <img src="../assets/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Sutras Playbook
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Architecture
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="amber"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="amber"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/sharmilanAmpi/sutras-playbook" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    sutras-playbook
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../deployment/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Deployment
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../operations/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Operations
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../cost-analysis/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Cost Analysis
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../scaling/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Scaling
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../decisions/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Decisions
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../roadmap/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Roadmap
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Sutras Playbook" class="md-nav__button md-logo" aria-label="Sutras Playbook" data-md-component="logo">
+      
+  <img src="../assets/logo.svg" alt="logo">
+
+    </a>
+    Sutras Playbook
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/sharmilanAmpi/sutras-playbook" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    sutras-playbook
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#design-philosophy-ports-adapters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design philosophy: ports &amp; adapters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-ai-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The AI pipeline
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-data-actually-travels" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How data actually travels
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#redis-cache-and-queue-one-instance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Redis: cache and queue, one instance
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#component-view-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Component view: backend
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#component-view-frontend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Component view: frontend
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#why-its-built-this-way" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it's built this way
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#whats-next" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What's next
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cost-analysis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cost Analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../scaling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scaling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Decisions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#design-philosophy-ports-adapters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design philosophy: ports &amp; adapters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-ai-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The AI pipeline
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-data-actually-travels" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How data actually travels
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#redis-cache-and-queue-one-instance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Redis: cache and queue, one instance
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#component-view-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Component view: backend
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#component-view-frontend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Component view: frontend
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#why-its-built-this-way" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it's built this way
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#whats-next" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What's next
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h1>
+<p>Sutras is a small, deliberately boring system in the places that don't matter, and careful in the one place that does: the pipeline that turns a rough thought into something worth keeping.</p>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>The product is two applications talking to one API: a React SPA where you write and browse entries, and a Symfony backend that owns the data and orchestrates an asynchronous AI pipeline over everything you save. Postgres holds the durable data; Redis does double duty as cache and message transport for a background worker that runs the AI pipeline off the request path, so saving an entry is instant and the "thinking" happens after.</p>
+<pre class="mermaid"><code>flowchart LR
+    User(("Browser")) --&gt; SPA["React SPA"]
+    SPA --&gt;|REST API| API["Symfony API"]
+    API --&gt; DB[("PostgreSQL")]
+    API --&gt;|enqueue| Queue(("Redis\nqueue + cache"))
+    Queue --&gt; Worker["Async worker\n(AI pipeline)"]
+    Worker --&gt;|today| Claude[("Claude API")]
+    Worker -.-&gt;|self-hosted experiment| Local["Open-weight model\n(cost / resilience)"]</code></pre>
+<h2 id="design-philosophy-ports-adapters">Design philosophy: ports &amp; adapters<a class="headerlink" href="#design-philosophy-ports-adapters" title="Permanent link">&para;</a></h2>
+<p>Both apps are built hexagonal — business rules live in a framework-free core (<code>domain</code> + <code>application</code>), and everything that talks to the outside world (HTTP controllers, the database, the UI framework, the AI provider) is an adapter plugged in at the edge through an interface. The core never imports an adapter; it depends on a port, and an adapter implements it.</p>
+<pre class="mermaid"><code>flowchart LR
+    subgraph Driving["Driving side"]
+        A["HTTP / UI"]
+    end
+    subgraph Core["Core"]
+        direction TB
+        AP["Application\n(use cases)"] --&gt; DM["Domain\n(rules)"]
+    end
+    subgraph Driven["Driven side"]
+        B["Database / External APIs"]
+    end
+    A --&gt;|calls| AP
+    AP -.-&gt;|port| B</code></pre>
+<p>This isn't architecture for its own sake — it buys three things that matter for a product still finding its shape:</p>
+<ul>
+<li><strong>The core is testable without booting anything.</strong> Business rules are plain classes, tested directly, no framework, no HTTP, no database.</li>
+<li><strong>Adapters are swappable without a rewrite.</strong> The AI provider behind the pipeline is a port, not a hardcoded call — see below. So is persistence, so is the delivery mechanism.</li>
+<li><strong>A future split stays mechanical.</strong> If the frontend and backend ever need to move into separate repos, or a mobile client joins the React SPA, the boundary is already drawn.</li>
+</ul>
+<h2 id="the-ai-pipeline">The AI pipeline<a class="headerlink" href="#the-ai-pipeline" title="Permanent link">&para;</a></h2>
+<p>This is the part of the system actually worth showing. Every entry a user writes goes through four sequential, asynchronous passes before it's considered finished:</p>
+<ol>
+<li><strong>Content-safety validation</strong> — a gate, not a suggestion. If this fails or errors, the entry is rejected outright and never proceeds.</li>
+<li><strong>Grammar &amp; wording correction</strong> — tightens the raw thought into something readable.</li>
+<li><strong>Technical-accuracy correction</strong> — a second pass focused on correctness, not just prose.</li>
+<li><strong>Simplification</strong> — makes sure the final entry is still readable months later, out of context.</li>
+</ol>
+<pre class="mermaid"><code>flowchart LR
+    Save["Entry saved"] --&gt; Validate["Validate"]
+    Validate --&gt;|unsafe| Review["Held back +\nrouted to human review"]
+    Validate --&gt;|safe| Correct["Correct"]
+    Correct --&gt; Context["Context-correct"]
+    Context --&gt; Simplify["Simplify"]
+    Simplify --&gt; Done["Published"]</code></pre>
+<p>Each stage only runs if the previous one succeeded — a failure after validation just stops the chain, no partial or corrupted output ever reaches the user. Every attempt, at every stage, is written to an append-only audit log, so both the entry's owner and a curator can see exactly what happened and why. Content that fails validation isn't silently dropped: it's flagged, the entry's author is protected from publishing something unsafe, and a curator is notified and can review and clear it.</p>
+<p>The pipeline runs against the Claude API today. Because the AI step sits behind a port rather than a direct dependency, there's a self-hosted alternative already being prototyped — small open-weight models running the same four prompts on commodity CPU hardware — as a path to lower per-entry cost and less single-vendor exposure as usage grows, without touching anything upstream of that port.</p>
+<h2 id="how-data-actually-travels">How data actually travels<a class="headerlink" href="#how-data-actually-travels" title="Permanent link">&para;</a></h2>
+<p>The diagrams above show the boxes; this is the sequence between them for the one flow that matters — writing an entry.</p>
+<pre class="mermaid"><code>sequenceDiagram
+    participant U as Browser
+    participant S as SPA
+    participant A as Symfony API
+    participant D as PostgreSQL
+    participant R as Redis
+    participant W as Async worker
+
+    U-&gt;&gt;S: Write entry, submit
+    S-&gt;&gt;A: POST /entries
+    A-&gt;&gt;D: INSERT entry (status: pending)
+    A-&gt;&gt;R: Enqueue pipeline job
+    A--&gt;&gt;S: 201 Created (status: pending)
+    S--&gt;&gt;U: Entry shown as "processing"
+
+    R-&gt;&gt;W: Deliver job
+    activate W
+    loop Validate -&gt; Correct -&gt; Context-correct -&gt; Simplify
+        W-&gt;&gt;D: Persist stage result + audit log entry
+    end
+    W-&gt;&gt;D: Update entry (status: published)
+    deactivate W
+
+    Note over S,U: Nothing pushes this back to the client today —&lt;br/&gt;see below.</code></pre>
+<blockquote>
+<p><strong>Resolved, and the answer is "nothing yet":</strong> confirmed directly against the frontend source, not just undocumented — there is no polling loop, no <code>EventSource</code>/SSE, and no <code>WebSocket</code> client anywhere in <code>frontend/src/</code>. The only interval timer in the codebase belongs to an unrelated homepage widget. A user currently learns an entry finished only by reloading or revisiting the page. See <a href="../decisions/#how-pipeline-completion-reaches-the-client-still-unresolved">Decisions</a> for why this was left open rather than guessed at, and <a href="../roadmap/#next">Roadmap</a> for where it sits in priority.</p>
+</blockquote>
+<h2 id="redis-cache-and-queue-one-instance">Redis: cache and queue, one instance<a class="headerlink" href="#redis-cache-and-queue-one-instance" title="Permanent link">&para;</a></h2>
+<p>The overview above says Redis "does double duty as cache and message transport," but a cache and a queue want opposite things from the same store: a cache is fine to lose (TTL, eviction under memory pressure); a queued pipeline job is not — losing one silently drops an entry mid-pipeline with no user-visible error.</p>
+<pre class="mermaid"><code>flowchart LR
+    subgraph RedisBox["Redis — one instance, two contracts"]
+        direction TB
+        Cache["Cache\nSymfony cache.app + cache.auth_sessions pools\nTTL-based, loss is acceptable"]
+        Queue["Queue transport\nsymfony/redis-messenger (Streams: XADD/XREADGROUP)\nack + retry semantics, per-message"]
+    end
+    API["Symfony API"] --&gt;|cache read/write| Cache
+    API --&gt;|enqueue job| Queue
+    Worker["Async worker"] --&gt;|consume + ack| Queue</code></pre>
+<blockquote>
+<p><strong>Resolved — partially good news:</strong> the queue side is backed by <code>symfony/redis-messenger</code>, which uses Redis Streams (<code>XADD</code> to publish, <code>XREADGROUP</code> with a consumer group to consume) rather than plain pub/sub, so message delivery itself has ack/retry semantics — a worker crash mid-job doesn't lose that job. <strong>But</strong> the production Redis pod runs with no PersistentVolumeClaim at all — it's in-memory only. The cluster's node autoscaler routinely reschedules pods as it scales the node pool between 1 and 3 nodes, and every time the Redis pod restarts, both the cache (expected) and any not-yet-consumed stream entries (not expected — a silent, user-invisible loss) disappear together. The transport mechanism is durable; the instance running it today isn't. See <a href="../decisions/#redis-cache-and-queue-on-one-instance-with-no-persistence-in-production">Decisions</a>.</p>
+</blockquote>
+<h2 id="component-view-backend">Component view: backend<a class="headerlink" href="#component-view-backend" title="Permanent link">&para;</a></h2>
+<p>The hexagonal diagram earlier is the pattern; this is how it actually maps onto the Symfony modules under <code>backend/src/</code>. One naming note before the diagram: the domain's core entity is called <code>Axiom</code> in the code — the product itself renamed "Sutra" to "Axiom" in v0.1.0 (new logo, new visual style at the same time) — while this doc, like the rest of the product surface, still calls it an "entry." If you're reading the actual source alongside this page, <code>Axiom</code> is the class you're looking for.</p>
+<pre class="mermaid"><code>flowchart TB
+    subgraph Driving["Driving adapters — Infrastructure/Http, Infrastructure/Messenger"]
+        HTTP["HTTP controllers\n(Infrastructure/Http/Controller)"]
+        CLI["Messenger consumer\n(worker: messenger:consume async)"]
+    end
+    subgraph Application["Application — use cases"]
+        UC["SaveAxiom, ValidateAxiomHandler,\nCorrectAxiomHandler, ContextCorrectAxiomHandler,\nSimplifyAxiomHandler, override-content-rejection"]
+    end
+    subgraph Domain["Domain"]
+        Dom["Axiom, AxiomWorkflow, WorkflowTrigger,\nContentValidationProvider (port), CorrectionProvider (port),\nper-stage RequestPublisher ports"]
+    end
+    subgraph Driven["Driven adapters — Infrastructure/Persistence, Infrastructure/Correction"]
+        Repo["Doctrine repository adapters\n(Infrastructure/Persistence/Doctrine)"]
+        AIPort["AI provider ports\n(ContentValidationProvider, CorrectionProvider)"]
+        Claude["ClaudeContentValidationProvider,\nClaudeCorrectionProvider — live today"]
+        Local["ai-server/ (Qwen2.5-1.5B, FastAPI) —\nbuilt, not wired to a port implementation yet"]
+    end
+    HTTP --&gt; UC
+    CLI --&gt; UC
+    UC --&gt; Dom
+    UC -.-&gt; Repo
+    UC -.-&gt; AIPort
+    AIPort --&gt; Claude
+    AIPort -.-&gt;|not implemented| Local</code></pre>
+<h2 id="component-view-frontend">Component view: frontend<a class="headerlink" href="#component-view-frontend" title="Permanent link">&para;</a></h2>
+<p>Same shape on the SPA side (<code>frontend/src/{domain,application,infrastructure,ui}</code>), and it does hold up — enforced not just by convention but by <code>@domain/@application/@infrastructure/@ui</code> TypeScript path aliases, so an import reaching the wrong direction is visible in a diff, not just in code review discipline.</p>
+<pre class="mermaid"><code>flowchart TB
+    subgraph Driving["Driving side — ui/"]
+        Views["ui/pages, ui/components —\nentry list/editor/detail, /axiom-workflows\ncurator review queue, Insights dashboard"]
+    end
+    subgraph AppCore["Application — application/"]
+        Hooks["application/command, application/query —\nuse cases consumed by ui/hooks"]
+    end
+    subgraph Domain["Domain — domain/"]
+        DomFE["domain/model, domain/service —\nentry status transitions, role-based UI gating rules"]
+    end
+    subgraph Driven["Driven side — infrastructure/"]
+        APIClient["infrastructure/http —\nREST client implementing domain/repository ports"]
+        Fake["infrastructure/fake —\nlocal/in-memory repos backing a few Insights\nwidgets by design, pending real endpoints"]
+        Notif["Notification/push adapter —\ndoes not exist yet (see below)"]
+    end
+    Views --&gt; Hooks
+    Hooks --&gt; DomFE
+    Hooks -.-&gt;|port| APIClient
+    Hooks -.-&gt;|port| Fake
+    Hooks -.-&gt;|port, unimplemented| Notif
+    APIClient --&gt;|REST, via Vite dev proxy or VITE_API_BASE_URL| Backend["Symfony API"]</code></pre>
+<p>The <code>Notif</code> adapter is the concrete shape of the <a href="#how-data-actually-travels">pipeline-completion open question</a> — there's a port-shaped gap in the diagram because there's a real gap in the code: no adapter has been written for it yet.</p>
+<h2 id="why-its-built-this-way">Why it's built this way<a class="headerlink" href="#why-its-built-this-way" title="Permanent link">&para;</a></h2>
+<p>The interesting engineering problem here isn't CRUD — it's turning unstructured, sometimes-unsafe user input into something trustworthy enough to publish, without a human in the loop on the happy path, while keeping a human very much in the loop the moment something looks wrong. That tradeoff — automate aggressively, but fail closed and leave an audit trail — is the actual design decision behind everything above.</p>
+<h2 id="whats-next">What's next<a class="headerlink" href="#whats-next" title="Permanent link">&para;</a></h2>
+<p>The architecture is intentionally ahead of the product surface: the pipeline, the audit trail, and the review tooling are built for a scale of usage the product doesn't have yet. Current focus is less on the plumbing and more on the parts users see day to day — a browsing experience that makes a growing library of entries feel navigable, and lightweight nudges toward what to learn next. See <a href="../decisions/">Decisions</a> for the specific infrastructure tradeoffs behind this, and <a href="../scaling/">Scaling</a> for what changes as usage grows.</p>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<p>Concepts used throughout this page, for anyone new to them:</p>
+<ul>
+<li><a href="https://c4model.com/">C4 model</a> — the Context → Container → Component → Code leveling this page loosely follows (Overview = Context/Container, the Component-view sections = Component).</li>
+<li><a href="https://arc42.org/">arc42</a> — the broader template this whole <code>docs/</code> split (architecture, decisions, deployment, scaling, operations, cost) is modeled after.</li>
+<li><a href="https://alistair.cockburn.us/hexagonal-architecture/">Hexagonal Architecture (Ports &amp; Adapters)</a> — Alistair Cockburn's original write-up; the source of the driving/core/driven vocabulary used in the design-philosophy and component diagrams.</li>
+<li><a href="https://adr.github.io/">Architecture Decision Records</a> — the format <code>decisions.md</code> follows (context / decision / tradeoff per entry).</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "content.code.copy", "search.suggest"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
