@@ -2,7 +2,7 @@ site_name: Sutras Playbook
 site_description: Architecture and operations case study for Sutras, a production SaaS app.
 site_author: Sharmilan
 repo_url: https://github.com/sharmilanAmpi/sutras-playbook
-repo_name: sharmilanAmpi/sutras-playbook
+repo_name: sutras-playbook
 
 theme:
   name: material
