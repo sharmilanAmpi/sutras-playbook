@@ -1,6 +1,15 @@
 # Sutras Playbook
 
-Sutras is a personal-scale SaaS app for micro-learning and knowledge capture, built solo. This site is a case study of how it's built, deployed, and operated — real architecture, real infrastructure decisions, real tradeoffs, and the parts that are still genuinely unfinished. No application source code lives here, just the engineering thinking behind the system.
+Sutras is a personal-scale SaaS app for micro-learning and knowledge capture, built solo: a place to record, in a sentence or two, what you actually learned today, with an AI pipeline that tightens the wording and a tag-based structure that turns scattered entries into something you can look back on.
+
+*Value and visibility for what you learned today — learning that sticks, growth that shows.*
+
+| | |
+|---|---|
+| Landing | [sutras.dev](https://sutras.dev) |
+| App | [app.sutras.dev](https://app.sutras.dev) |
+
+This site itself isn't that app — it's a case study of how it's built, deployed, and operated — real architecture, real infrastructure decisions, real tradeoffs, and the parts that are still genuinely unfinished. No application source code lives here, just the engineering thinking behind the system.
 
 ## The constraint everything else answers to
 
